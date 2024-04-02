@@ -14,7 +14,7 @@ const LoginScreen = () => {
     //       const token = await AsyncStorage.getItem("authToken");
         
     //     if (token) {
-    //       navigation.navigate("Home");
+    //       navigation.replace("Home");
     //     } else {
           
     //     }
