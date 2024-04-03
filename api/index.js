@@ -89,6 +89,22 @@ app.get("/users/:userId", (req, res) => {
         res.status(200).json(users);
     }).catch((err) => {
         console.log("Error retrieving users", err);
-        res.status(500).json({message: "Error retrieving users"})
+        res.status(500).json({message: "Error retrieving users"});
     })
 });
+
+// profile
+app.get("/profile/:userId", (req, res) => {
+    const requestedUserId = req.params.userId;
+  
+    User.findById(requestedUserId).then((user) => {
+      if (!user) {
+        return res.status(404).json({ message: "Not found user" });
+      }
+      res.status(200).json(user);
+    }).catch((err) => {
+      console.error("Error retrieving user", err);
+      res.status(500).json({ message: "Error retrieving user" });
+    });
+  });
+  
