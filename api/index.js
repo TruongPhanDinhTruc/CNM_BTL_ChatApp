@@ -24,7 +24,7 @@ mongoose.connect(
     }
 ).then(() => {
     console.log("Connected to Mongo Db");
-}).catch((error)=>{
+}).catch((error) => {
     console.log("Error to connecting to MongoDb", error);
 })
 
@@ -37,16 +37,16 @@ const Message = require('./models/message');
 
 //Dang ky
 
-app.post("/register", (req, res)=>{
-    const {name, email, password, image} = req.body;
+app.post("/register", (req, res) => {
+    const { name, email, password, image } = req.body;
 
-    const newUser = new User({name, email, password, image});
+    const newUser = new User({ name, email, password, image });
 
-    newUser.save().then(()=>{
-        res.status(200).json({message: "User register successfully"})
-    }).catch((error)=>{
+    newUser.save().then(() => {
+        res.status(200).json({ message: "User register successfully" })
+    }).catch((error) => {
         console.log("Error registering user", error);
-        res.status(500).json({message: "Error registering the user"})
+        res.status(500).json({ message: "Error registering the user" })
     });
 });
 
@@ -62,22 +62,22 @@ const createToken = (userId) => {
 
 //Dang nhap
 app.post("/login", (req, res) => {
-    const {email, password} = req.body;
+    const { email, password } = req.body;
 
-    if(!email || !password){
-        return res.status(404).json({message: "Email and the password are required"});
+    if (!email || !password) {
+        return res.status(404).json({ message: "Email and the password are required" });
     }
 
-    User.findOne({email}).then((user) => {
+    User.findOne({ email }).then((user) => {
         if (!user) {
-            return res.status(404).json({message: "User not found"});
+            return res.status(404).json({ message: "User not found" });
         }
 
         const token = createToken(user._id);
-        res.status(200).json({token});
+        res.status(200).json({ token });
     }).catch((error) => {
         console.log("Error in finding the user", error);
-        res.status(500).json({message: "Internal server Error"});
+        res.status(500).json({ message: "Internal server Error" });
     })
 });
 
@@ -85,26 +85,91 @@ app.post("/login", (req, res) => {
 app.get("/users/:userId", (req, res) => {
     const loggedInUserId = req.params.userId;
 
-    User.find({ _id: { $ne: loggedInUserId}}).then((users) => {
+    User.find({ _id: { $ne: loggedInUserId } }).then((users) => {
         res.status(200).json(users);
     }).catch((err) => {
         console.log("Error retrieving users", err);
-        res.status(500).json({message: "Error retrieving users"});
+        res.status(500).json({ message: "Error retrieving users" });
     })
 });
 
 // profile
 app.get("/profile/:userId", (req, res) => {
     const requestedUserId = req.params.userId;
-  
+
     User.findById(requestedUserId).then((user) => {
-      if (!user) {
-        return res.status(404).json({ message: "Not found user" });
-      }
-      res.status(200).json(user);
+        if (!user) {
+            return res.status(404).json({ message: "Not found user" });
+        }
+        res.status(200).json(user);
     }).catch((err) => {
-      console.error("Error retrieving user", err);
-      res.status(500).json({ message: "Error retrieving user" });
+        console.error("Error retrieving user", err);
+        res.status(500).json({ message: "Error retrieving user" });
     });
-  });
-  
+});
+
+// endpoint de gui ket ban den user
+app.post("/friend-request", async (req, res) => {
+    const { currentUserId, selectedUserId } = req.body;
+
+    try {
+
+        await User.findByIdAndUpdate(selectedUserId, {
+            $push: { friendRequests: currentUserId },
+        });
+
+        await User.findByIdAndUpdate(currentUserId, {
+            $pull: { sentFriendRequests: selectedUserId },
+        });
+
+        res.status(200);
+    } catch (error) {
+        res.sendStatus(500);
+    }
+});
+
+// endpoint de hien thi tat ca loi moi ket ban
+app.get("/friend-request/:userId", async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const user = await User.findById(userId).populate("friendRequests", "name email image").lean();
+
+        const friendRequests = user.friendRequests;
+
+        res.json(friendRequests);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
+//endpoint de chap nhan loi moi ket ban
+app.post("/friend-request/accept", async (req, res) => {
+    try {
+        const { senderId, recepientId } = req.body;
+
+        const sender = await User.findById(senderId);
+        const recepient = await User.findById(recepientId);
+
+        sender.friends.push(recepientId);
+        recepient.friends.push(senderId);
+
+        recepient.friendRequests = recepient.friendRequests.filter(
+            (request) => request.toString() !== senderId.toString()
+        );
+
+        sender.sentFriendRequests = sender.sentFriendRequests.filter(
+            (request) => request.toString() !== recepientId.toString()
+        );
+
+        await sender.save();
+        await recepient.save();
+
+        res.status(200).json({ message: "Friend Request accepted successfully" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+
+});

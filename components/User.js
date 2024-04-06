@@ -1,7 +1,28 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useContext, useState } from 'react'
+import { UserType } from '../UseContext';
 
 const User = ({ item }) => {
+    const {userId, setUserId} = useContext(UserType);
+    const [requestSent, setRequestSent] = useState(false);
+    const sendFriendRequest = async(currentUserId, selectedUserId) => {
+        try {
+            const respone = await fetch("http://localhost:8000/friend-request", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({currentUserId, selectedUserId}),
+            })
+
+            if (respone.ok) {
+                setRequestSent(true);
+                console.log("request sent");
+            }
+        } catch (error) {
+            console.log("error message", error);
+        }
+    };
     return (
         <Pressable style={styles.viewFriendItem}>
             <View>
@@ -13,7 +34,8 @@ const User = ({ item }) => {
                 <Text style={styles.txtEmail}>{item?.email}</Text>
             </View>
 
-            <Pressable style={styles.btnAddFriend}>
+            <Pressable onPress={() => sendFriendRequest(userId, item._id)}
+            style={styles.btnAddFriend}>
                 <Text style={styles.txtAdd}>Add Friend</Text>
             </Pressable>
         </Pressable>

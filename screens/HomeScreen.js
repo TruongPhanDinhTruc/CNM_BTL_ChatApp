@@ -23,7 +23,7 @@ const HomeScreen = () => {
       headerRight: () => (
         <View style={styles.headerView}>
           <Ionicons name="chatbox-ellipses-outline" size={24} color="black" />
-          <MaterialIcons name="people-outline" size={24} color="black" />
+          <MaterialIcons onPress={() => navigation.navigate("Friends")} name="people-outline" size={24} color="black" />
           <Pressable onPress={() => navigation.navigate("Profile")}>
             <AntDesign name="profile" size={24} color="black" />
           </Pressable>
