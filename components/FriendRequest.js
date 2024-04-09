@@ -1,9 +1,11 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import React, { useContext } from 'react'
 import { UserType } from '../UseContext';
+import { useNavigation } from '@react-navigation/native';
 
 const FriendRequest = ({ item, friendRequests, setFriendRequests }) => {
     const {userId, setUserId} = useContext(UserType);
+    const navigation = useNavigation();
 
     const acceptRequest = async (friendRequestsId) => {
         try {
@@ -21,7 +23,8 @@ const FriendRequest = ({ item, friendRequests, setFriendRequests }) => {
             if (respone.ok) {
                 setFriendRequests(friendRequests.filter((request) => {
                     request._id !== friendRequestsId
-                }))
+                }));
+                navigation.navigate("Chats");
             }
         } catch (error) {
             console.log("Error accept in the friend request", error);

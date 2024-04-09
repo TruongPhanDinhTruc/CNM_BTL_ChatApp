@@ -29,7 +29,7 @@ const FriendsScreen = () => {
     }
   }
 
-  console.log(friendRequests);
+  console.log("Friend request: ",friendRequests);
   return (
     <View style={styles.viewFriendList}>
       {friendRequests.length > 0 && <Text>Your friend requests!</Text>}
