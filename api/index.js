@@ -46,7 +46,7 @@ app.post("/register", (req, res) => {
         res.status(200).json({ message: "User register successfully" })
     }).catch((error) => {
         console.log("Error registering user", error);
-        res.status(500).json({ message: "Error registering the user" })
+        res.status(500).json({ error: "Error registering the user" })
     });
 });
 
@@ -77,7 +77,7 @@ app.post("/login", (req, res) => {
         res.status(200).json({ token });
     }).catch((error) => {
         console.log("Error in finding the user", error);
-        res.status(500).json({ message: "Internal server Error" });
+        res.status(500).json({ error: "Internal server Error" });
     })
 });
 
@@ -89,7 +89,7 @@ app.get("/users/:userId", (req, res) => {
         res.status(200).json(users);
     }).catch((err) => {
         console.log("Error retrieving users", err);
-        res.status(500).json({ message: "Error retrieving users" });
+        res.status(500).json({ error: "Error retrieving users" });
     })
 });
 
@@ -104,7 +104,7 @@ app.get("/profile/:userId", (req, res) => {
         res.status(200).json(user);
     }).catch((err) => {
         console.error("Error retrieving user", err);
-        res.status(500).json({ message: "Error retrieving user" });
+        res.status(500).json({ error: "Error retrieving user" });
     });
 });
 
@@ -140,7 +140,7 @@ app.get("/friend-request/:userId", async (req, res) => {
         res.json(friendRequests);
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
@@ -169,24 +169,93 @@ app.post("/friend-request/accept", async (req, res) => {
         res.status(200).json({ message: "Friend Request accepted successfully" });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ error: "Internal Server Error" });
     }
 
 });
 
 //endpoint de hien thi ban da ket ban 
-app.get("/accepted-friends/:userId", async(req, res) => {
+app.get("/accepted-friends/:userId", async (req, res) => {
     try {
-        const {userId} = req.params;
+        const { userId } = req.params;
         const user = await User.findById(userId).populate(
             "friends",
             "name email image"
-        )
+        );
 
         const accepedtFriends = user.friends;
         res.json(accepedtFriends);
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'files/');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + '-' + file.originalname);
+    },
+});
+
+const upload = multer({ storage: storage });
+
+//endpoint de gui tin nhan va luu vao backend
+app.post("/messages", upload.single("imageFile"), async (req, res) => {
+    try {
+        const { senderId, recepientId, messageType, messageText } = req.body;
+
+        const newMessage = new Message({
+            senderId,
+            recepientId,
+            messageType,
+            message: messageText,
+            timeStamp: new Date(),
+            imageUrl: messageType === "image",
+        });
+
+        await newMessage.save();
+        res.status(200).json({ message: "Message sent successfully" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+//endpoint lay thong tin nguoi dung
+app.get("/user/:userId", async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const recepientId = await User.findById(userId);
+
+        res.json(recepientId);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+//endpoint de lay tin nhan trong chat room
+app.get("/messages/:senderId/:recepientId", async (req, res) => {
+    try {
+        const { senderId, recepientId } = req.params;
+
+        const messages = await Message.find({
+            $or: [
+                { senderId: senderId, recepientId: recepientId },
+                { senderId: recepientId, recepientId: senderId },
+            ],
+        }).populate("senderId", "_id name");
+
+        res.json(messages);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
