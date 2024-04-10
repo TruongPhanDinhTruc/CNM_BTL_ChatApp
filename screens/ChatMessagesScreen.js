@@ -1,5 +1,5 @@
 import { Image, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
-import React, { useContext, useEffect, useLayoutEffect, useState } from 'react'
+import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Entypo } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import EmojiSelector from 'react-native-emoji-selector';
@@ -21,6 +21,22 @@ const ChatMessagesScreen = () => {
   const handleEmojiPress = () => {
     setShowEmojiSelector(!showEmojiSelector);
   };
+
+  const scrollViewRef = useRef(null);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, []);
+
+  const scrollToBottom = () => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: false })
+    }
+  };
+
+  const handleContentSizeChange = () => {
+    scrollToBottom();
+  }
 
   const fetchMessages = async () => {
     try {
@@ -120,7 +136,7 @@ const ChatMessagesScreen = () => {
 
   return (
     <KeyboardAvoidingView style={styles.containChatMess}>
-      <ScrollView>
+      <ScrollView ref={scrollViewRef} contentContainerStyle={{ flexGrow: 1 }} onContentSizeChange={handleContentSizeChange}>
         {messages.map((item, index) => {
           if (item.messageType === "text") {
             return (
