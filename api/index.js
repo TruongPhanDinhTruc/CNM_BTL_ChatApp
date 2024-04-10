@@ -119,10 +119,10 @@ app.post("/friend-request", async (req, res) => {
         });
 
         await User.findByIdAndUpdate(currentUserId, {
-            $pull: { sentFriendRequests: selectedUserId },
+            $push: { sentFriendRequests: selectedUserId },
         });
 
-        res.status(200);
+        res.sendStatus(200);
     } catch (error) {
         res.sendStatus(500);
     }
@@ -165,7 +165,7 @@ app.post("/friend-request/accept", async (req, res) => {
 
         await sender.save();
         await recepient.save();
-
+        // console.log(sender);
         res.status(200).json({ message: "Friend Request accepted successfully" });
     } catch (error) {
         console.log(error);
@@ -259,3 +259,37 @@ app.get("/messages/:senderId/:recepientId", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
+//
+app.get("/friend-requests/sent/:userId", async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const user = await User.findById(userId).populate("sentFriendRequests","name email image").lean();
+
+        const sentFriendRequests = user.sentFriendRequests;
+        // console.log(sentFriendRequests);
+        res.json(sentFriendRequests);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+app.get("/friends/:userId", (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        User.findById(userId).populate("friends").then((user) => {
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            const friendIds = user.friends.map((friend) => friend._id);
+
+            res.status(200).json(friendIds);
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+})
