@@ -1,4 +1,4 @@
-import { Image, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, View, Pressable } from 'react-native'
 import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Entypo } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
@@ -8,16 +8,17 @@ import { useRoute } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
-const ChatMessagesScreen = () => {
+const GroupChatMessagesScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const { userId, setUserId } = useContext(UserType);
   const [showEmojiSelector, setShowEmojiSelector] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [recepientData, setRecepientData] = useState();
-  const { userId, setUserId } = useContext(UserType);
-  const { recepientId } = route.params;
+  const { groupId } = route.params;
+
   const handleEmojiPress = () => {
     setShowEmojiSelector(!showEmojiSelector);
   };
@@ -40,7 +41,7 @@ const ChatMessagesScreen = () => {
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/messages/${userId}/${recepientId}`);
+      const response = await fetch(`http://localhost:8000/group-messages/${groupId}`);
 
       const data = await response.json();
 
@@ -58,26 +59,15 @@ const ChatMessagesScreen = () => {
     fetchMessages();
   }, []);
 
-  useEffect(() => {
-    const fetchRecepientData = async () => {
-      try {
-        const response = await fetch(`http://localhost:8000/user/${recepientId}`);
-
-        const data = await response.json();
-        // console.log("Data: ",response);
-        setRecepientData(data);
-      } catch (error) {
-        console.log("Error retrieving details: ", error);
-      }
-    };
-
-    fetchRecepientData();
-  }, []);
   const handleSend = async (messageType, imageUri) => {
+    if (message === "") {
+      setMessage("");
+      return;
+    }
     try {
       const formData = new FormData();
+      formData.append("groupId", groupId);
       formData.append("senderId", userId);
-      formData.append("recepientId", recepientId);
 
       if (messageType === "image") {
         formData.append("messageType", "image");
@@ -92,7 +82,7 @@ const ChatMessagesScreen = () => {
 
       }
 
-      const response = await fetch("http://localhost:8000/messages", {
+      const response = await fetch("http://localhost:8000/group-messages", {
         method: "POST",
         body: formData,
       });
@@ -107,10 +97,22 @@ const ChatMessagesScreen = () => {
       console.log("Error send message: ", error);
     }
   };
-  
-  console.log("=================");
-  console.log("Recepient Data: ", recepientData);
-  console.log("Messages: ", messages);
+
+  useEffect(() => {
+    const fetchRecepientData = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/group-chat-detail/${groupId}`);
+
+        const data = await response.json();
+        // console.log("Data: ",response);
+        setRecepientData(data);
+      } catch (error) {
+        console.log("Error retrieving details: ", error);
+      }
+    };
+
+    fetchRecepientData();
+  }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -120,9 +122,8 @@ const ChatMessagesScreen = () => {
           <Ionicons onPress={() => navigation.goBack()} name="arrow-back" size={24} color="black" />
 
           <View style={styles.viewDetailReceptient}>
-            <Image style={styles.imageAvatar} source={{ uri: recepientData?.image }} />
-
             <Text style={styles.txtNameReceptient}>{recepientData?.name}</Text>
+            <Text style={styles.txtMemberReceptient}>{recepientData?.members.length} members</Text>
           </View>
         </View>
       )
@@ -132,7 +133,11 @@ const ChatMessagesScreen = () => {
   const formatTime = (time) => {
     const options = { hour: "numeric", minute: "numeric" };
     return new Date(time).toLocaleString("en-US", options);
-  }
+  };
+
+  console.log("======================");
+  console.log("recepientData: ", recepientData);
+  console.log("Messages: ", messages);
 
   return (
     <KeyboardAvoidingView style={styles.containChatMess}>
@@ -191,7 +196,7 @@ const ChatMessagesScreen = () => {
   )
 }
 
-export default ChatMessagesScreen
+export default GroupChatMessagesScreen
 
 const styles = StyleSheet.create({
   containChatMess: {
@@ -238,13 +243,18 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   viewDetailReceptient: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
   },
   txtNameReceptient: {
     marginLeft: 5,
     fontSize: 15,
     fontWeight: 'bold'
+  },
+  txtMemberReceptient: {
+    marginLeft: 5,
+    fontSize: 15,
+    fontWeight: '400'
   },
   txtChat: {
     fontSize: 13,

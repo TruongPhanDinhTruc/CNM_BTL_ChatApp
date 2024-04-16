@@ -34,6 +34,8 @@ app.listen(port, () => {
 
 const User = require('./models/user');
 const Message = require('./models/message');
+const Group = require('./models/group');
+const GroupMessage = require('./models/group-message');
 
 //Dang ky
 
@@ -264,7 +266,7 @@ app.get("/messages/:senderId/:recepientId", async (req, res) => {
 app.get("/friend-requests/sent/:userId", async (req, res) => {
     try {
         const { userId } = req.params;
-        const user = await User.findById(userId).populate("sentFriendRequests","name email image").lean();
+        const user = await User.findById(userId).populate("sentFriendRequests", "name email image").lean();
 
         const sentFriendRequests = user.sentFriendRequests;
         // console.log(sentFriendRequests);
@@ -292,4 +294,94 @@ app.get("/friends/:userId", (req, res) => {
         console.log(error);
         res.status(500).json({ error: "Internal Server Error" });
     }
-})
+});
+
+//tao group chat
+app.post("/create-group", async (req, res) => {
+    try {
+        const { name, members } = req.body;
+
+        // const newGroup = new Group({ name, members });
+
+        const newGroup = await new Group({ name, members }).save();
+
+        for (const member of members) {
+            await User.findByIdAndUpdate(member, { $push: { groups: newGroup._id } });
+        }
+
+        res.status(200).json({ message: "Group created successfully" });
+    } catch (error) {
+        console.error("Error creating group:", error);
+        res.status(500).json({ error: "Error creating group" });
+    }
+});
+
+//endpoint lay danh sach group chat
+app.get("/group-chat/:userId", async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const user = await User.findById(userId).populate(
+            "groups",
+            "name members"
+        );
+        // console.log("User: ", user);
+        const groupChat = user.groups;
+        // console.log("Group: ", groupChat);
+        res.json(groupChat);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+//endpoint lay thong tin group
+app.get("/group-chat-detail/:groupId", async (req, res) => {
+    try {
+        const { groupId } = req.params;
+        // console.log("groupId: ", groupId);
+        const recepientId = await Group.findById(groupId);
+        // console.log("recepientId", recepientId);
+        res.json(recepientId);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+//endpoint de gui tin nhan nhom va luu vao backend
+app.post("/group-messages", upload.single("imageFile"), async (req, res) => {
+    try {
+        const { groupId, senderId, messageType, messageText } = req.body;
+
+        const newMessage = new GroupMessage({
+            groupId,
+            senderId,
+            messageType,
+            message: messageText,
+            timeStamp: new Date(),
+            imageUrl: messageType === "image",
+        });
+
+        await newMessage.save();
+        res.status(200).json({ message: "Message sent successfully" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+//endpoint de lay tin nhan trong chat group room
+app.get("/group-messages/:groupId", async (req, res) => {
+    try {
+        const { groupId } = req.params;
+
+        const messages = await GroupMessage.find({
+            groupId: groupId
+        }).populate("senderId", "_id name");
+
+        res.json(messages);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});

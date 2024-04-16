@@ -9,6 +9,7 @@ import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 import User from '../components/User';
 import { AntDesign } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -23,6 +24,7 @@ const HomeScreen = () => {
       headerRight: () => (
         <View style={styles.headerView}>
           <Ionicons onPress={() => navigation.navigate("Chats")} name="chatbox-ellipses-outline" size={24} color="black" />
+          <FontAwesome onPress={() => navigation.navigate("GroupChat")} name="group" size={24} color="black" />
           <MaterialIcons onPress={() => navigation.navigate("Friends")} name="people-outline" size={24} color="black" />
           <Pressable onPress={() => navigation.navigate("Profile")}>
             <AntDesign name="profile" size={24} color="black" />
