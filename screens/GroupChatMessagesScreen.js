@@ -62,6 +62,7 @@ const GroupChatMessagesScreen = () => {
   const handleSend = async (messageType, imageUri) => {
     if (message === "") {
       setMessage("");
+      fetchMessages();
       return;
     }
     try {
@@ -146,7 +147,7 @@ const GroupChatMessagesScreen = () => {
           if (item.messageType === "text") {
             return (
               <Pressable key={index} style={[
-                item?.senderId?._id === userId ? {
+                item?.senderId === userId ? {
                   alignSelf: 'flex-end',
                   backgroundColor: '#44d8f8',
                   padding: 8,

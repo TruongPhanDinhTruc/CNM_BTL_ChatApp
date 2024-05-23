@@ -218,7 +218,7 @@ app.post("/messages", upload.single("imageFile"), async (req, res) => {
             messageType,
             message: messageText,
             timeStamp: new Date(),
-            imageUrl: messageType === "image",
+            imageUrl: messageType === "image" ? req.file.path : null,
         });
 
         await newMessage.save();
@@ -377,7 +377,7 @@ app.get("/group-messages/:groupId", async (req, res) => {
 
         const messages = await GroupMessage.find({
             groupId: groupId
-        }).populate("senderId", "_id name");
+        });
 
         res.json(messages);
     } catch (error) {
@@ -385,3 +385,20 @@ app.get("/group-messages/:groupId", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
+//endpoint de xoa tin nhan
+app.post("/deleteMessages", async(req, res) => {
+    try {
+        const {messages} = req.body;
+
+        if (!Array.isArray(messages) || messages.length === 0) {
+            return res.status(400).json({ message: "Invalid req body" });
+        }
+
+        await Message.deleteMany({_id: {$in: messages}});
+        res.json({message: "Messages deleted successfully"});
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+})

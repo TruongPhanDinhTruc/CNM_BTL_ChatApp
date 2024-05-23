@@ -12,6 +12,7 @@ import ChatMessagesScreen from './screens/ChatMessagesScreen';
 import GroupChatScreen from './screens/GroupChatScreen';
 import GroupChatMessagesScreen from './screens/GroupChatMessagesScreen';
 import CreateGroupScreen from './screens/CreateGroupScreen';
+import TagNavigator from './TagNavigator';
 
 const Stack = createNativeStackNavigator();
 const StackNavigator = () => {
@@ -20,6 +21,7 @@ const StackNavigator = () => {
             <Stack.Navigator>
                 <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: true }} />
                 <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: true }} />
+                <Stack.Screen name='Tag' component={TagNavigator} options={{animation: 'slide_from_bottom', headerShown: true}}/>
                 <Stack.Screen name="Home" component={HomeScreen}  />
                 <Stack.Screen name="Profile" component={ProfileScreen}  />
                 <Stack.Screen name="Friends" component={FriendsScreen}  />
