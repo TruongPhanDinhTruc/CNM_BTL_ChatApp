@@ -402,3 +402,20 @@ app.post("/deleteMessages", async(req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 })
+
+//endpoint de xoa tin nhan nhom
+app.post("/deleteMessagesGroup", async(req, res) => {
+    try {
+        const {messages} = req.body;
+
+        if (!Array.isArray(messages) || messages.length === 0) {
+            return res.status(400).json({ message: "Invalid req body" });
+        }
+
+        await GroupMessage.deleteMany({_id: {$in: messages}});
+        res.json({message: "Messages deleted successfully"});
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+})

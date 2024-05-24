@@ -29,7 +29,7 @@ const ProfileScreen = () => {
             setUserId(userId);
 
             axios
-                .get(`http://localhost:8000/profile/${userId}`)
+                .get(`http://192.168.1.5:8000/profile/${userId}`)
                 .then((respone) => {
                     console.log("login user: ", respone.data);
                     setLoginUser(respone.data);

@@ -44,7 +44,7 @@ const ChatMessagesScreen = () => {
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/messages/${userId}/${recepientId}`);
+      const response = await fetch(`http://192.168.1.5:8000/messages/${userId}/${recepientId}`);
 
       const data = await response.json();
 
@@ -65,7 +65,7 @@ const ChatMessagesScreen = () => {
   useEffect(() => {
     const fetchRecepientData = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/user/${recepientId}`);
+        const response = await fetch(`http://192.168.1.5:8000/user/${recepientId}`);
 
         const data = await response.json();
         // console.log("Data: ",response);
@@ -101,7 +101,7 @@ const ChatMessagesScreen = () => {
 
       }
 
-      const response = await fetch("http://localhost:8000/messages", {
+      const response = await fetch("http://192.168.1.5:8000/messages", {
         method: "POST",
         body: formData,
       });
@@ -157,7 +157,7 @@ const ChatMessagesScreen = () => {
 
   const deleteMessages = async (messageIds) => {
     try {
-      const response = await fetch("http://localhost:8000/deleteMessages", {
+      const response = await fetch("http://192.168.1.5:8000/deleteMessages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -194,7 +194,7 @@ const ChatMessagesScreen = () => {
     if (!result.canceled) {
       handleSend("image", result.uri);
       console.log("Image assets : ", result.assets);
-      console.log("Image url: ", result.assets[0].uri);
+      // console.log("Image url: ", result.assets[0].uri);
     }
   }
 

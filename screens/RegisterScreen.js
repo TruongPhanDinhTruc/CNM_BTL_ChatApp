@@ -9,32 +9,75 @@ const RegisterScreen = () => {
   const [image, setImage] = useState("");
   const [name, setName] = useState("");
   const navigation = useNavigation();
-  const handleRegister = () => {
+  // const handleRegister = () => {
+  //   const user = {
+  //     name: name,
+  //     email: email,
+  //     password: password,
+  //     image: image,
+  //   }
+
+  //   axios.post("http://localhost:8000/register", user).then((respone) => {
+  //     console.log(respone);
+  //     Alert.alert(
+  //       "Registration successfull",
+  //       "You have been registered successfully"
+  //     );
+  //     setName("");
+  //     setEmail("");
+  //     setPassword("");
+  //     setImage("");
+  //   }).catch((error) => {
+  //     Alert.alert(
+  //       "Registration error",
+  //       "An error occurred while registering"
+  //     );
+  //     console.log("Registration failed", error);
+  //   })
+  // }
+
+  const handleRegister = async () => {
     const user = {
       name: name,
       email: email,
       password: password,
-      image: image,
-    }
-
-    axios.post("http://localhost:8000/register", user).then((respone) => {
-      console.log(respone);
+      image: image, // Assuming 'image' is a valid image URL or base64 data
+    };
+  
+    try {
+      const response = await fetch("http://192.168.1.5:8000/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // Required for JSON data
+        },
+        body: JSON.stringify(user),
+      });
+  
+      if (!response.ok) {
+        // Handle non-2xx status codes (errors)
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Registration failed");
+      }
+  
+      const responseData = await response.json();
+      console.log("Registration successful:", responseData);
+  
       Alert.alert(
-        "Registration successfull",
-        "You have been registered successfully"
+        "Registration Successful",
+        "You have been registered successfully!"
       );
+  
+      // Clear form fields (optional)
       setName("");
       setEmail("");
       setPassword("");
       setImage("");
-    }).catch((error) => {
-      Alert.alert(
-        "Registration error",
-        "An error occurred while registering"
-      );
-      console.log("Registration failed", error);
-    })
-  }
+    } catch (error) {
+      console.error("Registration failed:", error.message);
+      Alert.alert("Registration Error", error.message || "An error occurred while registering");
+    }
+  };
+  
   return (
     <View style={styles.container}>
       <KeyboardAvoidingView>

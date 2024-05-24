@@ -25,25 +25,60 @@ const LoginScreen = () => {
     //   };
     //   checkLoginStatus();
     // },[])
-    const handleLogin = () => {
+    // const handleLogin = () => {
+    //     const user = {
+    //         email: email,
+    //         password: password,
+    //     };
+
+    //     axios
+    //       .post("http://localhost:8000/login", user)
+    //       .then((respone) => {
+    //         // console.log(respone);
+    //         const token = respone.data.token;
+    //         AsyncStorage.setItem("authToken", token);
+
+    //         navigation.replace("Tag")
+    //     }).catch((error) => {
+    //         if (axios.isAxiosError(error)) {
+    //             // Xử lý lỗi mạng
+    //             console.error("Lỗi mạng:", error.message);
+    //             Alert.alert("Lỗi đăng nhập", "Không thể kết nối với máy chủ. Vui lòng kiểm tra kết nối mạng của bạn hoặc thử lại sau.");
+    //           } else {
+    //             // Xử lý các lỗi khác
+    //             console.error("Lỗi đăng nhập:", error);
+    //             Alert.alert("Lỗi đăng nhập", "Đã xảy ra lỗi. Vui lòng thử lại sau.");
+    //           }
+    //     })
+    // }
+
+    //Fetch
+    const handleLogin = async () => {
         const user = {
-            email: email,
-            password: password,
+          email: email,
+          password: password,
         };
-
-        axios
-          .post("http://localhost:8000/login", user)
-          .then((respone) => {
-            console.log(respone);
-            const token = respone.data.token;
-            AsyncStorage.setItem("authToken", token);
-
-            navigation.replace("Tag")
-        }).catch((error) => {
-            Alert.alert("Login Error", "Invalid email or password");
-            console.log("Login Error", error);
-        })
-    }
+      
+        try {
+          const response = await fetch("http://192.168.1.5:8000/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(user),
+          });
+      
+          const responseData = await response.json();
+          const token = responseData.token;
+      
+          await AsyncStorage.setItem("authToken", token);
+          navigation.replace("Tag");
+        } catch (error) {
+          console.error("Lỗi đăng nhập:", error);
+          Alert.alert("Lỗi đăng nhập", "Đã xảy ra lỗi. Vui lòng thử lại sau.");
+        }
+      };
+      
     
     return (
         <View style={styles.container}>

@@ -10,7 +10,7 @@ const User = ({ item }) => {
     useEffect(() => {
         const fetchFriendRequests = async () => {
             try {
-                const respone = await fetch(`http://localhost:8000/friend-requests/sent/${userId}`);
+                const respone = await fetch(`http://192.168.1.5:8000/friend-requests/sent/${userId}`);
 
                 const data = await respone.json();
                 // console.log("Data: ", data);
@@ -30,7 +30,7 @@ const User = ({ item }) => {
     useEffect(() => {
         const fetchUserFriends = async () => {
             try {
-                const respone = await fetch(`http://localhost:8000/friends/${userId}`);
+                const respone = await fetch(`http://192.168.1.5:8000/friends/${userId}`);
 
                 const data = await respone.json();
                 if (respone.ok) {
@@ -47,7 +47,7 @@ const User = ({ item }) => {
 
     const sendFriendRequest = async (currentUserId, selectedUserId) => {
         try {
-            const respone = await fetch("http://localhost:8000/friend-request", {
+            const respone = await fetch("http://192.168.1.5:8000/friend-request", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

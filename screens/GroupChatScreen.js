@@ -13,7 +13,7 @@ const GroupChatScreen = () => {
   useEffect(() => {
     const groupChatList = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/group-chat/${userId}`);
+        const response = await fetch(`http://192.168.1.5:8000/group-chat/${userId}`);
         const data = await response.json();
 
         if (response.ok) {

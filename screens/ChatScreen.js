@@ -12,7 +12,7 @@ const ChatScreen = () => {
   useEffect(() => {
     const accepedtFriendsList = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/accepted-friends/${userId}`);
+        const response = await fetch(`http://192.168.1.5:8000/accepted-friends/${userId}`);
         const data = await response.json();
 
         if (response.ok) {

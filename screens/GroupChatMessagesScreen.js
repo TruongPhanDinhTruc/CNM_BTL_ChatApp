@@ -7,15 +7,20 @@ import { UserType } from '../UseContext';
 import { useRoute } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from "expo-image-picker";
 
 const GroupChatMessagesScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { userId, setUserId } = useContext(UserType);
   const [showEmojiSelector, setShowEmojiSelector] = useState(false);
+  const [selectedMessages, setSelectedMessages] = useState([]);
   const [selectedImage, setSelectedImage] = useState("");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [recepientId, setRecepientId] = useState([]);
   const [recepientData, setRecepientData] = useState();
   const { groupId } = route.params;
 
@@ -41,7 +46,7 @@ const GroupChatMessagesScreen = () => {
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/group-messages/${groupId}`);
+      const response = await fetch(`http://192.168.1.5:8000/group-messages/${groupId}`);
 
       const data = await response.json();
 
@@ -57,6 +62,22 @@ const GroupChatMessagesScreen = () => {
 
   useEffect(() => {
     fetchMessages();
+  }, []);
+
+  useEffect(() => {
+    const fetchRecepientData = async () => {
+      try {
+        const response = await fetch(`http://192.168.1.5:8000/user/${recepientId}`);
+
+        const data = await response.json();
+        // console.log("Data: ",response);
+        setRecepientData(data);
+      } catch (error) {
+        console.log("Error retrieving details: ", error);
+      }
+    };
+
+    fetchRecepientData();
   }, []);
 
   const handleSend = async (messageType, imageUri) => {
@@ -83,7 +104,7 @@ const GroupChatMessagesScreen = () => {
 
       }
 
-      const response = await fetch("http://localhost:8000/group-messages", {
+      const response = await fetch("http://192.168.1.5:8000/group-messages", {
         method: "POST",
         body: formData,
       });
@@ -102,7 +123,7 @@ const GroupChatMessagesScreen = () => {
   useEffect(() => {
     const fetchRecepientData = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/group-chat-detail/${groupId}`);
+        const response = await fetch(`http://192.168.1.5:8000/group-chat-detail/${groupId}`);
 
         const data = await response.json();
         // console.log("Data: ",response);
@@ -127,14 +148,70 @@ const GroupChatMessagesScreen = () => {
             <Text style={styles.txtMemberReceptient}>{recepientData?.members.length} members</Text>
           </View>
         </View>
-      )
+      ),
+      headerRight: () => selectedMessages.length > 0 ? (
+        <View style={styles.viewOptionSelect}>
+          <Ionicons name="arrow-redo" size={24} color="black" />
+          <Ionicons name="arrow-undo" size={24} color="black" />
+          <FontAwesome name="star" size={24} color="black" />
+          <MaterialIcons onPress={() => deleteMessages(selectedMessages)} name="delete" size={24} color="black" />
+        </View>
+      ) : null
     })
-  }, [recepientData]);
+  }, [recepientData, selectedMessages]);
+
+  const deleteMessages = async (messageIds) => {
+    try {
+      const response = await fetch("http://192.168.1.5:8000/deleteMessagesGroup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ messages: messageIds })
+      })
+
+      if (response.ok) {
+        setSelectedMessages((previousMessages) => previousMessages.filter((id) => !messageIds.includes(id)));
+
+        fetchMessages();
+      } else {
+        console.log("Error deleting messages: ", response.status);
+      }
+    } catch (error) {
+      console.log("Error deleting messages", error);
+    }
+  }
 
   const formatTime = (time) => {
     const options = { hour: "numeric", minute: "numeric" };
     return new Date(time).toLocaleString("en-US", options);
   };
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+    if (!result.canceled) {
+      handleSend("image", result.uri);
+      console.log("Image assets : ", result.assets);
+      // console.log("Image url: ", result.assets[0].uri);
+    }
+  };
+
+  const handleSelectMessage = (message) => {
+    const isSelected = selectedMessages.includes(message._id);
+
+    if (isSelected) {
+      setSelectedMessages((previousMessages) => previousMessages.filter((id) => id !== message._id));
+    } else {
+      setSelectedMessages((previousMessages) => [...previousMessages, message._id]);
+    }
+  }
 
   console.log("======================");
   console.log("recepientData: ", recepientData);
@@ -145,9 +222,44 @@ const GroupChatMessagesScreen = () => {
       <ScrollView ref={scrollViewRef} contentContainerStyle={{ flexGrow: 1 }} onContentSizeChange={handleContentSizeChange}>
         {messages.map((item, index) => {
           if (item.messageType === "text") {
+            const isSelected = selectedMessages.includes(item._id)
+            return (
+              <Pressable
+                onPress={() => handleSelectMessage(item)}
+                key={index} style={[
+                  item?.senderId === userId ? {
+                    alignSelf: 'flex-end',
+                    backgroundColor: '#44d8f8',
+                    padding: 8,
+                    maxWidth: '60%',
+                    margin: 10,
+                    borderRadius: 7,
+                  } : {
+                    alignSelf: 'flex-start',
+                    backgroundColor: 'lightgray',
+                    padding: 8,
+                    margin: 10,
+                    borderRadius: 7,
+                    maxWidth: '60%'
+                  },
+
+                  isSelected && { width: "100%", backgroundColor: "#dbdbdc" }
+                ]}>
+                <Text style={{ fontSize: 13, textAlign: isSelected ? 'right' : 'left' }}>{item?.message}</Text>
+                <Text style={styles.txtTime}>{formatTime(item.timeStamp)}</Text>
+              </Pressable>
+            )
+          }
+
+          if (item.messageType === "image") {
+            const baseUrl = "/truc/CongNgheMoi/CNM_BTL_ChatApp/api/files/";
+            const imageUrl = item.imageUrl;
+            const fileName = imageUrl.split("/").pop();
+            const source = { uri: baseUrl + fileName };
+
             return (
               <Pressable key={index} style={[
-                item?.senderId === userId ? {
+                item?.senderId?._id === userId ? {
                   alignSelf: 'flex-end',
                   backgroundColor: '#44d8f8',
                   padding: 8,
@@ -163,8 +275,11 @@ const GroupChatMessagesScreen = () => {
                   maxWidth: '60%'
                 },
               ]}>
-                <Text style={styles.txtChat}>{item?.message}</Text>
-                <Text style={styles.txtTime}>{formatTime(item.timeStamp)}</Text>
+
+                <View>
+                  <Image source={source} style={styles.imageMessage} />
+                  <Text style={styles.txtTime}>{formatTime(item?.timeStamp)}</Text>
+                </View>
               </Pressable>
             )
           }
@@ -178,7 +293,7 @@ const GroupChatMessagesScreen = () => {
           onChangeText={(text) => setMessage(text)}
           style={styles.inputTextMess}
           placeholder='Input your message' />
-        <Feather style={{ marginLeft: 5 }} name="camera" size={24} color="black" />
+        <Feather onPress={pickImage} style={{ marginLeft: 5 }} name="camera" size={24} color="black" />
         <Pressable
           onPress={() => handleSend("")}
           style={styles.btnSend}>
@@ -267,5 +382,19 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: 'black',
     marginTop: 5
+  },
+  imageMessage: {
+    width: 200,
+    height: 200,
+    borderRadius: 7,
+  },
+  txtSelectedMess: {
+    fontSize: 16,
+    fontWeight: '500'
+  },
+  viewOptionSelect: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10
   }
 })

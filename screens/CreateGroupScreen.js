@@ -22,7 +22,7 @@ const CreateGroupScreen = () => {
             name: nameGroup,
             members: selectedFriendsId,
         }
-        axios.post("http://localhost:8000/create-group", group).then((respone) => {
+        axios.post("http://192.168.1.5:8000/create-group", group).then((respone) => {
             console.log(respone);
             Alert.alert(
                 "Create group successfull",
@@ -40,7 +40,7 @@ const CreateGroupScreen = () => {
     useEffect(() => {
         const accepedtFriendsList = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/accepted-friends/${userId}`);
+                const response = await fetch(`http://192.168.1.5:8000/accepted-friends/${userId}`);
                 const data = await response.json();
 
                 if (response.ok) {
