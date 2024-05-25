@@ -109,6 +109,10 @@ const LoginScreen = () => {
                             secureTextEntry={true} />
                     </View>
 
+                    <Pressable onPress={() => navigation.navigate("ForgotPassword")} style={styles.btnForgotPass}>
+                        <Text style={styles.textEmail}>Forgot your password</Text>
+                    </Pressable>
+
                     <Pressable style={styles.btnLogin}
                         onPress={handleLogin}>
                         <Text style={styles.textLogin}>Login</Text>
@@ -180,5 +184,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: 'gray',
         textAlign: 'center'
+    },
+    btnForgotPass: {
+        // justifyContent: 'flex-end',
+        alignItems: 'flex-end'
     }
 })

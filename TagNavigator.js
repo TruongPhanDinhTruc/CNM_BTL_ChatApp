@@ -10,15 +10,22 @@ import { MaterialIcons } from '@expo/vector-icons';
 import ChatScreen from './screens/ChatScreen';
 import FriendsScreen from './screens/FriendsScreen';
 import GroupChatScreen from './screens/GroupChatScreen';
+import { useNavigation } from '@react-navigation/native';
 
 const Tab = createBottomTabNavigator();
 
 const TagNavigator = () => {
+    const navigation = useNavigation();
     return (
         <Tab.Navigator screenOptions={{
             tabBarHideOnKeyboard: true,
             tabBarShowLabel: false,
-            headerShown: false,
+            headerShown: true,
+            headerRight: () => (
+                <View>
+                    <Entypo onPress={() => navigation.replace("Login")} name="log-out" size={24} color="black" />
+                </View>
+            ),
             tabBarStyle: styles.tabBarStyle,
         }}>
             <Tab.Screen name='Home' component={HomeScreen} options={{

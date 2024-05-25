@@ -13,6 +13,7 @@ import GroupChatScreen from './screens/GroupChatScreen';
 import GroupChatMessagesScreen from './screens/GroupChatMessagesScreen';
 import CreateGroupScreen from './screens/CreateGroupScreen';
 import TagNavigator from './TagNavigator';
+import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
 
 const Stack = createNativeStackNavigator();
 const StackNavigator = () => {
@@ -21,7 +22,7 @@ const StackNavigator = () => {
             <Stack.Navigator>
                 <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: true }} />
                 <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: true }} />
-                <Stack.Screen name='Tag' component={TagNavigator} options={{animation: 'slide_from_bottom', headerShown: true}}/>
+                <Stack.Screen name='Tag' component={TagNavigator} options={{animation: 'slide_from_bottom', headerShown: false}}/>
                 <Stack.Screen name="Home" component={HomeScreen}  />
                 <Stack.Screen name="Profile" component={ProfileScreen}  />
                 <Stack.Screen name="Friends" component={FriendsScreen}  />
@@ -30,6 +31,7 @@ const StackNavigator = () => {
                 <Stack.Screen name="GroupChat" component={GroupChatScreen}  />
                 <Stack.Screen name="GroupChatMessages" component={GroupChatMessagesScreen}  />
                 <Stack.Screen name="CreateGroup" component={CreateGroupScreen}  />
+                <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen}  />
             </Stack.Navigator>
         </NavigationContainer>
     )

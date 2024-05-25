@@ -419,3 +419,27 @@ app.post("/deleteMessagesGroup", async(req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 })
+
+//enpoint de thay doi password
+app.post("/changePassword", async(req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Find the user by email
+        const user = await User.findOne({ email });
+    
+        // Check if user exists
+        if (!user) {
+          return res.status(404).json({ error: "User not found" });
+        }
+    
+        // Update the user's password securely
+        user.password = password;
+        await user.save();
+    
+        res.json({ message: "Password changed successfully" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+})
