@@ -359,7 +359,7 @@ app.post("/group-messages", upload.single("imageFile"), async (req, res) => {
             messageType,
             message: messageText,
             timeStamp: new Date(),
-            imageUrl: messageType === "image",
+            imageUrl: messageType === "image" ? req.file.path : null,
         });
 
         await newMessage.save();

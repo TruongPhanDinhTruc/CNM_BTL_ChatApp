@@ -9,12 +9,13 @@ const CreateGroupScreen = () => {
     const { userId, setUserId } = useContext(UserType);
     const [nameGroup, setNameGroup] = useState("");
     const [accepedtFriends, setAccepedtFriends] = useState([]);
-    const [userToAdd, setUserToAdd] = useState("");
+    const [selectedFriend, setSelectedFriend] = useState([]);
     const [selectedFriendsId, setSelectedFriendsId] = useState([userId]);
 
     const handleAddFriend = (userToAdd) => {
         // const userToAddId = userToAdd._id;
         setSelectedFriendsId([...selectedFriendsId, userToAdd]);
+        handleSelectItem(userToAdd);
     }
 
     const handleCreateGroup = () => {
@@ -55,6 +56,17 @@ const CreateGroupScreen = () => {
     }, []);
     console.log("List friends: ", accepedtFriends);
     console.log("addFriendId: ", selectedFriendsId);
+    // console.log("Selected Friend: ", selectedFriend);
+
+    const handleSelectItem = (item) => {
+        const isSelected = accepedtFriends.includes(item._id);
+
+        if (isSelected) {
+            setSelectedFriend((previousItem) => previousItem.filter((id) => id !== item._id));
+        } else {
+            setSelectedFriend((previousItem) => [...previousItem, item._id]);
+        }
+    }
 
     return (
         <View style={styles.container}>
@@ -69,12 +81,11 @@ const CreateGroupScreen = () => {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-                <Pressable>
+                <View>
                     {accepedtFriends.map((item, index) => (
-                        // <UserChat key={index} item={item} />
-                        <UserListItem key={index} item={item} handleFunction={() => handleAddFriend(item)} />
+                        <UserListItem key={index} item={item} handleFunction={() => handleAddFriend(item)} isSelected={selectedFriend} />
                     ))}
-                </Pressable>
+                </View>
             </ScrollView>
 
             <Pressable
@@ -142,5 +153,10 @@ const styles = StyleSheet.create({
         height: 50,
         borderRadius: 25,
         resizeMode: 'cover'
+    },
+    txtLastMess: {
+        marginTop: 3,
+        color: 'gray',
+        fontWeight: '500',
     },
 })

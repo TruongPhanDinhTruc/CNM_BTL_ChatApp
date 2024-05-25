@@ -1,4 +1,4 @@
-import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, View, Pressable } from 'react-native'
+import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, View, Pressable, Image } from 'react-native'
 import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Entypo } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
@@ -81,7 +81,7 @@ const GroupChatMessagesScreen = () => {
   }, []);
 
   const handleSend = async (messageType, imageUri) => {
-    if (message === "") {
+    if (message === "" && messageType !== "image") {
       setMessage("");
       fetchMessages();
       return;
@@ -197,8 +197,8 @@ const GroupChatMessagesScreen = () => {
 
     console.log(result);
     if (!result.canceled) {
-      handleSend("image", result.uri);
-      console.log("Image assets : ", result.assets);
+      handleSend("image", result.assets[0].uri);
+      // console.log("Image assets : ", result.assets);
       // console.log("Image url: ", result.assets[0].uri);
     }
   };
@@ -252,10 +252,10 @@ const GroupChatMessagesScreen = () => {
           }
 
           if (item.messageType === "image") {
-            const baseUrl = "/truc/CongNgheMoi/CNM_BTL_ChatApp/api/files/";
+            const baseUrl = "../api/files/";
             const imageUrl = item.imageUrl;
-            const fileName = imageUrl.split("/").pop();
-            const source = { uri: baseUrl + fileName };
+            const fileName = imageUrl.split("\\").pop();
+            const source = baseUrl + fileName;
 
             return (
               <Pressable key={index} style={[

@@ -1,19 +1,33 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const UserListItem = ({item, handleFunction}) => {
-  return (
-    <Pressable
+const UserListItem = ({ item, handleFunction, isSelected }) => {
+    const isSelecte = isSelected.includes(item._id);
+    return (
+        <Pressable
             onPress={handleFunction}
-            style={styles.viewFriendChat}>
+            style={[{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+                borderWidth: 0.7,
+                borderColor: "lightgray",
+                borderTopWidth: 0,
+                borderLeftWidth: 0,
+                borderRightWidth: 0,
+                padding: 10,
+                backgroundColor: "white"
+            },
+            isSelecte && { backgroundColor: "#dbdbdc", borderWidth: 1, borderColor: "#cccccc",}
+            ]}>
             <Image style={styles.imageAvatar} source={{ uri: item?.image }} />
 
-            <View style={{ flex: 1 }}>
+            <View>
                 <Text style={styles.txtName}>{item?.name}</Text>
                 <Text style={styles.txtLastMess}>{item?.email}</Text>
             </View>
         </Pressable>
-  )
+    )
 }
 
 export default UserListItem

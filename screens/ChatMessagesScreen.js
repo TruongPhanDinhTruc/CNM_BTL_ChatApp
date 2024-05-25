@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from "expo-image-picker";
+// const Img = require('../api/files/1716652581733-131975192-image.jpg');
 
 const ChatMessagesScreen = () => {
   const navigation = useNavigation();
@@ -78,7 +79,7 @@ const ChatMessagesScreen = () => {
     fetchRecepientData();
   }, []);
   const handleSend = async (messageType, imageUri) => {
-    if (message === "") {
+    if (message === "" && messageType !== "image") {
       setMessage("");
       fetchMessages();
       return;
@@ -192,8 +193,8 @@ const ChatMessagesScreen = () => {
 
     console.log(result);
     if (!result.canceled) {
-      handleSend("image", result.uri);
-      console.log("Image assets : ", result.assets);
+      handleSend("image", result.assets[0].uri);
+      // console.log("Image assets : ", result.assets);
       // console.log("Image url: ", result.assets[0].uri);
     }
   }
@@ -243,11 +244,13 @@ const ChatMessagesScreen = () => {
           }
 
           if (item.messageType === "image") {
-            const baseUrl = "/truc/CongNgheMoi/CNM_BTL_ChatApp/api/files/";
+            const baseUrl = "../api/files/";
             const imageUrl = item.imageUrl;
-            const fileName = imageUrl.split("/").pop();
-            const source = { uri: baseUrl + fileName };
-
+            const fileName = imageUrl.split("\\").pop();
+            const source = baseUrl + fileName;
+            // const Img = require('../api/files/1716652581733-131975192-image.jpg');
+            // const src = { uri: 'api:/files:/1716652581733-131975192-image.jpg'}
+            // console.log("Soure Image: ", source);
             return (
               <Pressable key={index} style={[
                 item?.senderId?._id === userId ? {
@@ -268,7 +271,7 @@ const ChatMessagesScreen = () => {
               ]}>
 
                 <View>
-                  <Image source={source} style={styles.imageMessage} />
+                  <Image source={{uri: source}} style={{width: 200, height: 200, borderRadius: 7}}></Image>
                   <Text style={styles.txtTime}>{formatTime(item?.timeStamp)}</Text>
                 </View>
               </Pressable>
